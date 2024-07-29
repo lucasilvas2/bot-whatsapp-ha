@@ -1,0 +1,23 @@
+version: '3'
+services:
+    homeassistant:
+        container_name: homeassistant
+        image: "homeassistant/home-assistant:latest"
+        volumes:
+            - ./config:/config
+            - /etc/localtime:/etc/localtime:ro
+        restart: unless-stopped
+        privileged: true
+        ports:
+            - "8123:8123"
+    mosquitto:
+        container_name: mqtt
+        image: eclipse-mosquitto
+        ports:
+            - "1883:1883"
+            # This port is for Webhooks
+            - "9001:9001"
+        volumes:
+            - ./config-mosquitto/config:/mosquitto/config
+            - ./config-mosquitto/data:/mosquitto/data
+            - ./config-mosquitto/log:/mosquitto/log

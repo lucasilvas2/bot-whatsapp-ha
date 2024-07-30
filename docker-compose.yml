@@ -1,7 +1,7 @@
 version: '3'
 services:
     homeassistant:
-        container_name: homeassistant
+        container_name: ha
         image: "homeassistant/home-assistant:latest"
         volumes:
             - ./config:/config
@@ -11,7 +11,7 @@ services:
         ports:
             - "8123:8123"
     mosquitto:
-        container_name: mqtt
+        container_name: mqtt-mosquitto
         image: eclipse-mosquitto
         ports:
             - "1883:1883"

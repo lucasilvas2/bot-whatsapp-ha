@@ -94,7 +94,7 @@ client.on('message_create', async (msg) => {
         await msg.reply('pong');
     }
 
-    if(msg.body.includes('!tv')) {
+    if(msg.body.includes('!tv') ||msg.body.includes('!home') ) {
         let text = msg.body.replace('!', '');
         let [topic, value] = text.split(' ');
         let data = {

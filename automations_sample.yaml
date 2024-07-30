@@ -1,0 +1,26 @@
+- id: '1722296767720'
+  alias: Handle On/Off Payloads
+  description: Performs different actions based on the MQTT payload (on or off).
+  trigger:
+  - platform: mqtt
+    topic: home/automation/control
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''off'' }}'
+      sequence:
+      - device_id: 60166e04b1e206a22807b44ab44071e4
+        domain: mobile_app
+        type: notify
+        message: 'off'
+        title: 'off'
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''on'' }}'
+      sequence:
+      - device_id: 60166e04b1e206a22807b44ab44071e4
+        domain: mobile_app
+        type: notify
+        message: 'on'
+        title: 'on'

@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 import paho.mqtt.client as mqtt
-
+from dotenv import load_dotenv, dotenv_values
+load_dotenv()
 app = Flask(__name__)
-THE_BROKER = "192.168.15.11"
+THE_BROKER = '192.168.180.13'
 CLIENT_ID = ""
 
 @app.route('/webhook', methods=['POST'])

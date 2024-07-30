@@ -137,3 +137,5 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
+
+.wwebjs_cache

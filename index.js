@@ -6,9 +6,10 @@ let clientMqtt = null;
 let bot = null;
 const ip_broker = process.env.IP_BROKER;
 const my_phone = process.env.MY_PHONE_NUMBER;
+const topic_whatsapp = process.env.TOPIC_Whatsapp;
 
 function initClientMqtt() {
-    const clientMqtt = mqtt.connect(`mqtt://${ip_broker}`, {
+    clientMqtt = mqtt.connect(`mqtt://${ip_broker}`, {
         keepalive: 3,
         port: 1883,
         reconnectPeriod: 15000,
@@ -27,7 +28,7 @@ function initClientMqtt() {
 function initBotClient() {
     // const client = new Client();
 
-    const bot = new Client({
+    bot = new Client({
         authStrategy: new LocalAuth(),
         // proxyAuthentication: { username: 'username', password: 'password' },
         puppeteer: {
@@ -74,7 +75,6 @@ function initBotClient() {
         const debugWWebVersion = await bot.getWWebVersion();
         console.log(`WWebVersion = ${debugWWebVersion}`);
 
-        console.log(bot);
         bot.pupPage.on('pageerror', function (err) {
             console.log('Page error: ' + err.toString());
         });
@@ -86,42 +86,27 @@ function initBotClient() {
     return bot;
 }
 
-function botListener(bot, clientMqtt) {
-    bot.on('message_create', async (msg) => {
-        // Fired on all message creations, including your own
-        if (msg.fromMe) {
-            // do stuff here
-        }
+function botListener() {
+    try {
+        bot.on('message_create', async (msg) => {
 
-        // Unpins a message
-        if (msg.fromMe && msg.body.startsWith('!unpin')) {
-            const pinnedMsg = await msg.getQuotedMessage();
-            if (pinnedMsg) {
-                // Will unpin a message
-                const result = await pinnedMsg.unpin();
-                console.log(result); // True if the operation completed successfully, false otherwise
+            if (msg.body.includes('!tv') || msg.body.includes('!home')) {
+                let text = msg.body.replace('!', '');
+                let [topic, value] = text.split(' ');
+                clientMqtt.publish(topic, value);
             }
-        }
 
-        if (msg.body === '!ping') {
-            // send back "pong" to the chat the message was sent in
-            await msg.reply('pong');
-        }
+        });
+    } catch (e) {
+        console.error(e);
+    }
 
-        if (msg.body.includes('!tv') || msg.body.includes('!home')) {
-            let text = msg.body.replace('!', '');
-            let [topic, value] = text.split(' ');
-            clientMqtt.publish(topic, value);
-        }
-
-    });
 }
 
-function clientMqttListener(clientMqtt, bot) {
-    let testTopic = 'test_ok';
-    clientMqtt.subscribe(testTopic, (err) => {
+function clientMqttListener() {
+    clientMqtt.subscribe(topic_whatsapp, (err) => {
         if (!err) {
-            console.log('subscribed to', testTopic)
+            console.log('subscribed to', topic_whatsapp)
         } else {
             console.error(err)
         }
@@ -135,7 +120,7 @@ function clientMqttListener(clientMqtt, bot) {
 
         console.log('received message "%s" from topic "%s"', message, topic)
         if (number_details) {
-            const sendMessageData = await bot.sendMessage(number_details._serialized, message); // send message
+            const sendMessageData = await bot.sendMessage(number_details._serialized, `${message}`); // send message
         } else {
             console.log(final_number, "Mobile number is not registered");
         }
@@ -153,4 +138,4 @@ async function initBotWhatsapp() {
     bot = await initBotClient();
 }
 
-initBotWhatsapp().catch((err) => {console.log()});
+initBotWhatsapp().catch((err) => {console.log(err)});

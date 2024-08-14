@@ -2,25 +2,94 @@
   alias: Handle On/Off Payloads
   description: Performs different actions based on the MQTT payload (on or off).
   trigger:
-  - platform: mqtt
-    topic: home/automation/control
+    - platform: mqtt
+      topic: home/automation/control
   action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == ''off'' }}'
-      sequence:
-      - device_id: 60166e04b1e206a22807b44ab44071e4
-        domain: mobile_app
-        type: notify
-        message: 'off'
-        title: 'off'
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == ''on'' }}'
-      sequence:
-      - device_id: 60166e04b1e206a22807b44ab44071e4
-        domain: mobile_app
-        type: notify
-        message: 'on'
-        title: 'on'
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''off'' }}'
+          sequence:
+            - device_id: 60166e04b1e206a22807b44ab44071e4
+              domain: mobile_app
+              type: notify
+              message: 'off'
+              title: 'off'
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''on'' }}'
+          sequence:
+            - device_id: 60166e04b1e206a22807b44ab44071e4
+              domain: mobile_app
+              type: notify
+              message: 'on'
+              title: 'on'
+- id: '1723201185976'
+  alias: Sensor
+  description: Sensor de temperatura
+  trigger:
+    - platform: mqtt
+      topic: sensor/temperature
+  condition: []
+  action:
+    - if:
+        - condition: template
+          value_template: '{{trigger.payload_json.temperature > 40}}'
+      then:
+        - service: mqtt.publish
+          metadata: {}
+          data:
+            qos: '0'
+            topic: whatsapp/alert
+            retain: false
+            payload: Temperatura elevada.
+            payload_template: teste
+  mode: single
+- id: '1723221124407'
+  alias: tv
+  description: ''
+  trigger:
+    - platform: mqtt
+      topic: tv/volume
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''aumentar''}}'
+          sequence:
+            - service: media_player.volume_up
+              metadata: {}
+              data: {}
+              target:
+                device_id: fce9c2399f32d7142e593077f8c2ed0a
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''diminuir''}}'
+          sequence:
+            - service: media_player.volume_down
+              metadata: {}
+              data: {}
+              target:
+                device_id: fce9c2399f32d7142e593077f8c2ed0a
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''silenciar''}}'
+          sequence:
+            - service: media_player.volume_mute
+              metadata: {}
+              data:
+                is_volume_muted: false
+              target:
+                device_id: fce9c2399f32d7142e593077f8c2ed0a
+        - conditions:
+            - condition: template
+              value_template: '{{ trigger.payload == ''maximo'' }}'
+          sequence:
+            - service: media_player.volume_set
+              metadata: {}
+              data:
+                volume_level: 1
+              target:
+                device_id: fce9c2399f32d7142e593077f8c2ed0a
+  mode: single

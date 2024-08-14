@@ -1,4 +1,4 @@
-const {Client, LocalAuth} = require('whatsapp-web.js');
+const {Client, LocalAuth, Location} = require('whatsapp-web.js');
 const mqtt = require('mqtt');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -95,7 +95,25 @@ function botListener() {
                 let [topic, value] = text.split(' ');
                 clientMqtt.publish(topic, value);
             }
+        });
 
+        bot.on('message', async (msg) => {
+            if (msg.body === '!ping') {
+                msg.reply('pong');
+            } else if (msg.body.includes('!tv')) {
+                let text = msg.body.replace('!', '');
+                let [topic, value] = text.split(' ');
+                clientMqtt.publish(topic, value);
+            }else if (msg.body === '!location') {
+                // only latitude and longitude
+                await msg.reply(new Location(37.422, -122.084));
+                // location with name only
+                await msg.reply(new Location(37.422, -122.084, { name: 'Googleplex' }));
+                // location with address only
+                await msg.reply(new Location(37.422, -122.084, { address: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA' }));
+                // location with name, address and url
+                await msg.reply(new Location(37.422, -122.084, { name: 'Googleplex', address: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA', url: 'https://google.com' }));
+            }
         });
     } catch (e) {
         console.error(e);

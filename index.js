@@ -46,14 +46,6 @@ function initBotClient() {
         // NOTE: This event will not be fired if a session is specified.
         console.log('QR RECEIVED', qr);
 
-        // paiuting code example
-        const pairingCodeEnabled = false;
-        if (pairingCodeEnabled && !pairingCodeRequested) {
-            const pairingCode = await client.requestPairingCode('5584987631700'); // enter the target phone number
-            console.log('Pairing code enabled, code: ' + pairingCode);
-            console.log('Number: ' + '558491097019');
-            pairingCodeRequested = true;
-        }
     });
 
     bot.on('authenticated', () => {
@@ -90,6 +82,8 @@ function botListener() {
                 let text = msg.body.replace('!', '');
                 let [topic, value] = text.split(' ');
                 clientMqtt.publish(topic, value);
+            }else if(msg.body.includes('!help')){
+                await msg.reply('!tv/volume silenciar \n !tv/volume aumentar \n !tv/volume diminuir');
             }
         });
 
@@ -109,6 +103,8 @@ function botListener() {
                 await msg.reply(new Location(37.422, -122.084, { address: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA' }));
                 // location with name, address and url
                 await msg.reply(new Location(37.422, -122.084, { name: 'Googleplex', address: '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA', url: 'https://google.com' }));
+            }else if(msg.body.includes('!help')){
+                await msg.reply('!tv/volume silenciar \n !tv/volume aumentar \n !tv/volume diminuir');
             }
         });
     } catch (e) {
@@ -127,7 +123,6 @@ function clientMqttListener() {
     })
 
     clientMqtt.on('message', async (topic, message) => {
-        console.log(myListPhones);
         sendMessageListPhones(message, topic);
     });
 }

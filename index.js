@@ -1,28 +1,24 @@
 const {Client, LocalAuth, Location} = require('whatsapp-web.js');
 const mqtt = require('mqtt');
+const ClientMqtt = require('./ClientMqtt');
 const dotenv = require('dotenv');
 dotenv.config();
 let clientMqtt = null;
 let bot = null;
-const ip_broker = process.env.IP_BROKER;
-const my_phone = process.env.MY_PHONE_NUMBER;
+const ipBroker = process.env.IP_BROKER;
+const myListPhones = process.env.MY_LIST_PHONE_NUMBER;
 const topic_whatsapp = process.env.TOPIC_Whatsapp;
 
-function initClientMqtt() {
-    clientMqtt = mqtt.connect(`mqtt://${ip_broker}`, {
+async function initClientMqtt() {
+    let options = {
         keepalive: 3,
         port: 1883,
         reconnectPeriod: 15000,
         rejectUnauthorized: false,
-    });
-    clientMqtt.on("connect", () => {
-        clientMqtt.subscribe("presence", (err) => {
-            if (!err) {
-                clientMqtt.publish("presence", "Hello mqtt");
-            }
-        });
-    });
-    return clientMqtt;
+    };
+
+    let clientMqttBroker = new ClientMqtt(ipBroker, options);
+    return await clientMqttBroker.init();
 }
 
 function initBotClient() {
@@ -131,7 +127,16 @@ function clientMqttListener() {
     })
 
     clientMqtt.on('message', async (topic, message) => {
-        const sanitized_number = my_phone.toString().replace(/[- )(]/g, ""); // remove unnecessary chars from the number
+        console.log(myListPhones);
+        sendMessageListPhones(message, topic);
+    });
+}
+
+function sendMessageListPhones(message, topic) {
+    let arrayPhones = myListPhones.split(',');
+
+    arrayPhones.forEach(async (phone) => {
+        const sanitized_number = phone.toString().replace(/[- )(]/g, ""); // remove unnecessary chars from the number
         const final_number = `55${sanitized_number.substring(sanitized_number.length - 11)}`; // add 91 before the number here 91 is country code of India
 
         const number_details = await bot.getNumberId(final_number);
@@ -142,10 +147,8 @@ function clientMqttListener() {
         } else {
             console.log(final_number, "Mobile number is not registered");
         }
-
-    });
+    })
 }
-
 function initListeners() {
     botListener(bot, clientMqtt);
     clientMqttListener(clientMqtt, bot);
